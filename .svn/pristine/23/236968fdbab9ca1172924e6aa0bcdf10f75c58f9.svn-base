@@ -1,0 +1,179 @@
+package com.instanza.soma.Service.Setting;
+
+import com.instanza.soma.Service.Tools.GalleryPage;
+import com.instanza.soma.resources.E07_Profile;
+import help.AppOperation;
+import help.AppOperationImp;
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.AndroidKeyCode;
+import org.junit.Assert;
+
+
+/**
+ * Created by daisy on 17/3/2.
+ */
+public class ProfilePage {
+    public AppOperation appOperation;
+
+    public enum ProfileCase {ProfilePhoto, ProfileName, Stauts;}
+
+    private static ProfilePage profilePage;
+
+    public static ProfilePage getInstance() {
+        if (profilePage == null) {
+            synchronized (ProfilePage.class) {
+                if (profilePage == null) {
+                    profilePage = new ProfilePage();
+                }
+            }
+        }
+        return profilePage;
+    }
+
+    public ProfilePage() {
+        appOperation = AppOperationImp.getInstance();
+    }
+
+    /**
+     * Settings页面打开后
+     * 编辑头像--Gallery方式--目前只能选择第一张，随机选择失败,NeedUpdate
+     *
+     * @param driver
+     */
+    public void editProfilePhotoGallery(AppiumDriver driver) {
+//        java.util.Random r = new java.util.Random(10);
+//        int x = 1 + (int) (Math.random() * 30);
+        AppOperationImp.getInstance().snapshot(driver);
+        appOperation.click(driver, E07_Profile.avatar);//Profile Page 点击头像大图
+        GalleryPage.getInstance().GetPhoto(driver, GalleryPage.PhotoEntry.Gallery, GalleryPage.PhotoAction.cut, 10);//回到Profile page
+        appOperation.sleep(5);//确保返回了profile页面
+        AppOperationImp.getInstance().snapshot(driver);
+    }
+
+    /**
+     * Settings页面打开后
+     * 编辑头像--Camera方式
+     *
+     * @param driver
+     */
+    public void editProfilePhotoCamera(AppiumDriver driver) {
+        AppOperationImp.getInstance().snapshot(driver);
+        appOperation.click(driver, E07_Profile.avatar);//Profile Page 点击头像大图
+        GalleryPage.getInstance().GetPhoto(driver, GalleryPage.PhotoEntry.Camera, GalleryPage.PhotoAction.cut, 1);//回到Profile page
+        appOperation.sleep(5);//确保返回了profile页面
+        AppOperationImp.getInstance().snapshot(driver);
+    }
+
+    /**
+     * Settings页面打开后
+     * 编辑profilename
+     *
+     * @param driver
+     */
+    public void editProfileName(AppiumDriver driver) {
+        String text1 = driver.findElementById(E07_Profile.status_tv).getText();
+        System.out.println("修改之前的名称：" + text1);
+        appOperation.click(driver, E07_Profile.Name);//ProfilePage 点击Name
+        appOperation.sendkey(driver, E07_Profile.name_editText, SettingsTools.getRandomString(10));//Name Input Page
+        appOperation.click(driver, E07_Profile.Update);
+        appOperation.sleep(2);
+        String text2 = driver.findElementById(E07_Profile.status_tv).getText();
+        System.out.println("修改之后：" + text2);
+        Assert.assertNotEquals(text1, text2);
+    }
+
+    /**
+     * Settings页面打开后
+     * 编辑status--手动输入模式
+     *
+     * @param driver
+     */
+    public void editStautsByAdd(AppiumDriver driver) {
+        appOperation.swipeToUp(driver, 1000);
+        String text1 = appOperation.getElement(driver, E07_Profile.status_tv, 1).getText();
+        System.out.println("修改之前的名称：" + text1);
+        appOperation.click(driver, E07_Profile.status);//Profile Page 点击Status
+        appOperation.click(driver, E07_Profile.StatusEditEntrance);//Status Page 点击修改status
+        appOperation.sendkey(driver, E07_Profile.name_editText, SettingsTools.getRandomString(10));//Add new status Page, 输入新status
+        appOperation.click(driver, E07_Profile.Update);//Add new status Page 点击勾，状态更新成功, 回到status Page
+        appOperation.sleep(2);
+        ((AndroidDriver) driver).pressKeyCode(AndroidKeyCode.BACK);//回到 Profile page
+        appOperation.sleep(2);
+        appOperation.swipeToUp(driver, 1000);
+        String text2 = appOperation.getElement(driver, E07_Profile.status_tv, 1).getText();
+        System.out.println("修改之前的名称：" + text2);
+        Assert.assertNotEquals(text1, text2);
+    }
+
+    /**
+     * Settings页面打开后
+     * 编辑status--选择模式,第一屏直接选择即可
+     *
+     * @param driver
+     */
+    public void editStautsBySelect(AppiumDriver driver) {
+        appOperation.swipeToUp(driver, 1000);
+        String text1 = appOperation.getElement(driver, E07_Profile.status_tv, 1).getText();
+        System.out.println("修改之前的名称：" + text1);
+        appOperation.click(driver, E07_Profile.status);//Profile Page 点击Status到status页
+        appOperation.click(driver, E07_Profile.busy);//Select a current status--busy
+        ((AndroidDriver) driver).pressKeyCode(AndroidKeyCode.BACK);//回到 Profile page
+        appOperation.sleep(2);
+        appOperation.swipeToUp(driver, 1000);
+        String text2 = appOperation.getElement(driver, E07_Profile.status_tv, 1).getText();
+        System.out.println("修改之后：" + text2);
+        Assert.assertNotEquals(text1, text2);
+    }
+
+    /**
+     * Settings页面打开后
+     * 编辑status--选择模式,滑动到底部之后再选择
+     *
+     * @param driver
+     */
+    public void editStautsBySelectUp(AppiumDriver driver) {
+        appOperation.swipeToUp(driver, 1000);
+        String text1 = appOperation.getElement(driver, E07_Profile.status_tv, 1).getText();
+        System.out.println("修改之前的名称：" + text1);
+        appOperation.click(driver, E07_Profile.status);//Profile Page 点击Status到status页
+        appOperation.swipeToUp(driver,2000);
+        appOperation.click(driver,E07_Profile.eating,0);
+//        appOperation.swipeUntilFind(driver, E07_Profile.eating, 0);
+        appOperation.sleep(5000);
+        appOperation.click(driver, E07_Profile.eating);
+        ((AndroidDriver) driver).pressKeyCode(AndroidKeyCode.BACK);//回到 Profile page
+        appOperation.sleep(2);
+        appOperation.swipeToUp(driver, 1000);
+        String text2 = appOperation.getElement(driver, E07_Profile.status_tv, 1).getText();
+        System.out.println("修改之后：" + text2);
+        Assert.assertNotEquals(text1, text2);
+    }
+
+
+    //    public void ProfileUpdate(AppiumDriver driver, ProfileCase profileCaseObj) {
+//        profileEntrance(driver);
+//        switch (profileCaseObj) {
+//            case ProfilePhoto:
+//                editProfilePhotoGallery(driver);
+//                break;
+//            case ProfileName:
+//                editProfileName(driver);
+//                break;
+//            case Stauts:
+//                editStautsByAdd(driver);
+//                break;
+//            default:
+//                break;
+//        }
+//        appOperation.sleep(1000);
+//        ((AndroidDriver) driver).pressKeyCode(AndroidKeyCode.BACK);//回到Main page
+//    }
+//
+//    public void profileEntrance(AppiumDriver driver) {
+//        appOperation.click(driver, E00_Main.Settings);//Main Page
+//        appOperation.click(driver,E05_Setting.Profile);
+////        appOperation.SearchParentElementByChildTextIDsParentClass(driver, E05_Setting.ProfileItemName, E05_Setting.Item, E05_Setting.ItemParentClass).click();
+////        appOperation.click(driver, E05_Setting.Profile);//Setting Page
+//    }
+}

@@ -1,0 +1,173 @@
+package com.instanza.soma.debug;
+
+import com.instanza.soma.Business.LoginBusiness;
+import com.instanza.soma.Service.Contacts.ContactsService;
+import com.instanza.soma.Service.Login.LoginService;
+import com.instanza.soma.resources.E00_01_AgreeAndActivate;
+import com.instanza.soma.resources.E00_Main;
+import com.instanza.soma.resources.PrepareData;
+import help.AppOperation;
+import help.AppOperationImp;
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.NoSuchContextException;
+import io.appium.java_client.TouchAction;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.AndroidElement;
+import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.IOSElement;
+import io.appium.java_client.remote.HideKeyboardStrategy;
+import io.appium.java_client.remote.MobileCapabilityType;
+import junit.framework.TestSuite;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.*;
+
+//import junit.sampling.*;
+public class rugaltestsuite extends TestSuite{
+
+    private AppiumDriver<WebElement> driver,driver2;
+    private AppiumDriver<MobileElement> iosDriver2;
+    public AppOperation appOperation;
+    private Object syncObj = new Object();
+    final Timer timer = new Timer();
+    final Timer timer2 = new Timer();
+    @BeforeClass
+    public void setUp() throws Exception {
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+//        capabilities.setCapability("deviceName","SM-N9200");
+//        capabilities.setCapability("platformVersion", "6.0.1");
+//        capabilities.setCapability("app", "/Users/apple/Desktop/soma.apk");
+//        capabilities.setCapability("appPackage", "com.instanza.baba");
+//        capabilities.setCapability("appActivity", ".activity.CocoVoice");
+//
+//        capabilities.setCapability("sessionOverride", true);    //每次启动时覆盖session，否则第二次后运行会报错不能新建session
+//
+////        capabilities.setCapability("app", "/Users/apple/Desktop/bing.apk");
+////        capabilities.setCapability("appPackage", "com.microsoft.bing");
+////        capabilities.setCapability("appActivity", "com.microsoft.clients.bing.app.MainActivity");
+//
+//        capabilities.setCapability("noReset", true);
+//
+//        driver = new AndroidDriver<WebElement>(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+//
+////        DesiredCapabilities capabilities2 = new DesiredCapabilities();
+//        capabilities.setCapability("deviceName","X2P0215714003528");
+//        capabilities.setCapability("platformVersion", "6.0");
+//        capabilities.setCapability("app", "/Users/apple/Desktop/soma.apk");
+//        capabilities.setCapability("appPackage", "com.instanza.baba");
+//        capabilities.setCapability("appActivity", ".activity.CocoVoice");
+//        capabilities.setCapability("noReset", true);
+//
+//        driver2 = new AndroidDriver(new URL("http://127.0.0.1:4725/wd/hub"), capabilities);
+
+
+        DesiredCapabilities capabilities2 = new DesiredCapabilities();
+        capabilities2.setCapability(MobileCapabilityType.AUTOMATION_NAME, "XCUITest");
+        capabilities2.setCapability(MobileCapabilityType.PLATFORM_VERSION, "10.2");
+        capabilities2.setCapability(MobileCapabilityType.PLATFORM_NAME, "iOS");
+        capabilities2.setCapability(MobileCapabilityType.DEVICE_NAME, "iPhone");
+        capabilities2.setCapability(MobileCapabilityType.UDID, "8dbf13a9fd894edfcc537cfc89399b8f03754182");//5s
+        capabilities2.setCapability("bundleid", "com.instanza.BaBa");//run on real device com.tencent.xin
+//        capabilities2.setCapability("bundleid", "com.tencent.xin");//run on real device
+        capabilities2.setCapability(MobileCapabilityType.APP, "/Users/apple/Desktop/soma.ipa");
+//        capabilities2.setCapability(MobileCapabilityType.APP, "/Users/apple/Desktop/wechat6.5.5.ipa");
+        capabilities2.setCapability("noReset", true);
+        capabilities2.setCapability("sessionOverride", true);    //每次启动时覆盖session，否则第二次后运行会报错不能新建session
+        iosDriver2 = new IOSDriver<MobileElement>(new URL("http://127.0.0.1:4723/wd/hub"), capabilities2);
+
+//
+////        try {
+////            Runtime.getRuntime().exec("ps -ax|grep -i \"iproxy\"|grep -v grep|awk '{print \"kill -9 \" $1}'|sh");
+////        }catch (Exception e){
+////
+////        }
+//        capabilities2.setCapability(MobileCapabilityType.AUTOMATION_NAME, "XCUITest");
+//        capabilities2.setCapability(MobileCapabilityType.PLATFORM_VERSION, "10.2");
+//        capabilities2.setCapability(MobileCapabilityType.PLATFORM_NAME, "iOS");
+//        capabilities2.setCapability(MobileCapabilityType.DEVICE_NAME, "iPhone");
+//        capabilities2.setCapability(MobileCapabilityType.UDID, "8dbf13a9fd894edfcc537cfc89399b8f03754182");
+//        capabilities2.setCapability("bundleid", "com.instanza.BaBa");//run on real device
+//        capabilities2.setCapability(MobileCapabilityType.APP, "/Users/apple/Desktop/soma.ipa");
+//        capabilities2.setCapability("noReset", true);
+//        iosDriver = new IOSDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities2);
+
+        appOperation = AppOperationImp.getInstance();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        iosDriver2.quit();
+//        driver2.quit();
+    }
+    String temp_phonenumber = "1317893";
+    @Test
+    public void test(){
+////        LoginService.getInstance().Login_ios(iosDriver2,"firsttime","3174973959","United State","3959",false);
+//        appOperation.click(iosDriver2, E00_01_AgreeAndActivate.AgreeAndActivate_nspredicate);
+        appOperation.click(iosDriver2, "name = '4338'");
+        appOperation.sleep(1000);
+//        MobileElement webElement = (MobileElement)iosDriver2.findElementByClassName("TextView");
+        IOSElement webElement = (IOSElement)iosDriver2.findElementByXPath("//*[@name=\"SOMA\"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeTextView[1]");
+//        System.out.println(webElement.getLocation().getX()+"   y="+webElement.getLocation().getY()+"  text = "+webElement.getText());
+//        webElement.click();appOperation.sleep(1000);
+        int x= webElement.getLocation().getX();
+        int y= webElement.getLocation().getY();
+        int hight = webElement.getSize().getHeight();
+        int width = webElement.getSize().getWidth();
+        TouchAction myAction = new TouchAction(iosDriver2);
+        Point myPoint = webElement.getLocation();
+        myAction.press(x+width-10, y+hight-10).release().perform();
+        appOperation.sleep(2000);
+//        webElement = (IOSElement)iosDriver2.findElementByXPath("//*[@name=\"SOMA\"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeTextView[1]");
+        webElement.clear();
+        webElement.sendKeys("7654");
+        ((IOSDriver)iosDriver2).hideKeyboard("Send");
+//        appOperation.sendkey(iosDriver2,"classname/TextView","75643");
+//        ((IOSDriver)iosDriver2).hideKeyboard(HideKeyboardStrategy.PRESS_KEY,"Send");
+
+//        driver.findElementsByAndroidUIAutomator("new UiSelector().className("+"android.widget.ImageView"+").index(4)");
+//        iosDriver2.findElementByXPath("//*[@name=\"Agree and Activate\"]").click();
+//        iosDriver2.findElementByIosNsPredicate("value == 'https://soma.im/terms'").click();
+        appOperation.sleep(5000);
+
+    }
+
+
+
+    @Test(dataProvider="testData")
+    public void testtet(int tempint) {
+
+
+//        LoginBusiness.getInstance().DeleteAccount(driver,"firsttime");
+//        ContactsService.getInstance().addContactsFromAddIcon(driver,"testnick2","+19013004438");
+//        ContactsService.getInstance().deleteContact(driver,"44");
+//        driver.scrollToExact();
+//        ((AndroidDriver) driver).findElementByAndroidUIAutomator("textContains(\"Agree\")").click();
+    }
+
+
+
+    @DataProvider(name = "testData")
+    public Object[][] providerMethod(){
+        Object[][] result = null;
+
+            result = new Object[][]{new Object[]{3}};
+        return result;
+    }
+
+}

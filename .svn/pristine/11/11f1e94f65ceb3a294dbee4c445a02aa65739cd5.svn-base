@@ -1,0 +1,32 @@
+package com.instanza.soma.resources;
+//Main page
+//Main 界面的元素会出现在Chats, Contacts等子界面上，如果自动找的话会重复出现
+public class E00_Main {
+    public static final String ok = "text(\"OK\")";
+    public static final String Search = "Search";
+
+    public static final String main_tab_content  = "com.instanza.baba:id/main_tab_content";
+    public static final String calls_ll  = "com.instanza.baba:id/calls_ll";
+    public static final String chats_ll  = "com.instanza.baba:id/chats_ll";
+    public static final String Social  = "com.instanza.baba:id/social_ll";
+    public static final String contacts_ll  = "com.instanza.baba:id/contacts_ll";//顶部的双人图标
+    //NeedToDo, 把非ID替换成ID
+    public static final String GotIt = "text(\"Got It\")";
+    public static final String ViewDetails = "text(\"View Details\")";
+    public static final String Huaweititle = "AccessibilityId/Special Settings for Huawei";
+    public static final String Huaweititle_text = "Special Settings for Huawei";
+    public static final String AddButton = "classname/android.widget.ImageButton";
+    public static final String Settings = "AccessibilityId/Videos";
+    public static final String Settings_nspredicate = "name = 'Settings' and type = 'XCUIElementTypeButton'";
+    public static final String Settings_xpath = "xpath///android.view.ViewGroup[contains(@resource-id , 'com.instanza.baba:id/tool_bar')]/android.widget.ImageButton[1]";
+    public static final String maintab_calls  = "com.instanza.baba:id/maintab_calls";
+    public static final String maintab_contacts  = "com.instanza.baba:id/maintab_contacts";
+    public static final String Account = "text(\"Account\")";
+    public static final String maintab_chats  = "com.instanza.baba:id/maintab_chats";
+    public static final String ios_back  = "label = 'Back'";
+    public static final String ios_OK  = "label = 'OK'";
+    public static final String ios_Cancel  = "label = 'Cancel' and type = 'XCUIElementTypeButton'";
+    public static final String ios_Allow  = "name = 'Allow'";
+//    public static final String maintab_social  = "com.instanza.baba:id/maintab_social";
+
+}

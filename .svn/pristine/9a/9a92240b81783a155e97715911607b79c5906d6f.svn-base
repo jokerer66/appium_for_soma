@@ -1,0 +1,187 @@
+package help.driver;
+
+import help.bean.AppiumServer;
+import io.appium.java_client.remote.MobileCapabilityType;
+
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import static help.startup.SuiteTestThread.appiumServer;
+
+public class MobileInformation {
+    public static List<String> PLATFORM_NAME;
+    public static List<String> PLATFORM_VERSION;
+    public static List<String> DEVICE_ID;
+    public static List<String> PhoneType;
+    public static List<String> UDID;
+    public static List<String> listdevicealiasname = new ArrayList();
+
+    public static void GetMObileInformation() {
+        PLATFORM_NAME = new ArrayList<String>();
+        PLATFORM_VERSION = new ArrayList<String>();
+        DEVICE_ID = new ArrayList<String>();
+        PhoneType = new ArrayList<String>();
+        UDID = new ArrayList<String>();
+
+        AddInAndroidMobile();
+        AddInIosMobile();
+        DeleteOutMobile();
+    }
+
+    public static void AddInAndroidMobile() {
+        Process process = null;
+        InputStreamReader ir = null;
+        LineNumberReader input = null;
+        String line = null;
+        long port = 0;
+        long bootstrapPort = 0;
+        List<String> PLATFORM_NAME = new ArrayList<String>();
+        boolean ishuawei = false;
+        try {
+            process = Runtime.getRuntime().exec("adb devices");
+            ir = new InputStreamReader(process.getInputStream());
+            input = new LineNumberReader(ir);
+            while ((line = input.readLine()) != null) {
+                if (line.contains("device") && !line.contains("devices")) {
+                    PLATFORM_NAME.add("android");
+                    UDID.add(line.split("\t")[0].toString());
+                }
+            }
+            line = null;
+            input.close();
+            ir.close();
+            process.destroy();
+
+            //因awk不能识别，用字符串的split来代替。adb shell cat /system/build.prop | grep ro.build.version.release | awk -F = '{print $2}'
+            //因huawei手机不能执行grep，
+            //huawei的字符串在版本号的字符串后面，所以找到一个的时候不能break
+            for (int i = 0; i < UDID.size(); i++) {
+                //NeedToDo可以用getprop ro.build.version.release这个更简单的命令来实现，待调试
+                String platformversioncommand = "adb -s " + UDID.get(i) + " shell cat /system/build.prop";
+                process = Runtime.getRuntime().exec(platformversioncommand);
+                ir = new InputStreamReader(process.getInputStream());
+                input = new LineNumberReader(ir);
+                while ((line = input.readLine()) != null) {
+                    if (line.contains("huawei") || line.contains("honor")) {
+                        ishuawei = true;
+//                        PhoneType.set(i, "huawei");
+//                            System.out.println("android PhoneType= "+PhoneType);
+                    }
+                    if (line.contains("ro.build.version.release")) {
+                        for (int j = PLATFORM_VERSION.size(); j < i; j++)
+                            PLATFORM_VERSION.add("");
+                        PLATFORM_VERSION.add(i, line.split("=")[1].toString());
+                    }
+                    if (line.contains("ro.product.model")) {
+                        for (int j = PLATFORM_VERSION.size(); j < i; j++)
+                            PLATFORM_VERSION.add("");
+                        listdevicealiasname.add(i, UDID.get(i).toString()+"("+line.split("=")[1].toString()+")");
+                    }
+                }
+                Boolean oldDevice=false;
+                if ((appiumServer != null) && (appiumServer.getAppuimDeviceList() != null)) {
+                    for (int j = 0; j < appiumServer.getAppuimDeviceList().size(); j++) {
+                        if (UDID.get(i).equals(appiumServer.getAppuimDeviceList().get(j).getDevCapabilities().getCapability(MobileCapabilityType.UDID))) {
+                            oldDevice=true;
+                            break;
+                        }
+                    }
+                    if(oldDevice==false){
+                        port = 4725 + appiumServer.getAppuimDeviceList().size();
+                        bootstrapPort = 2251 + appiumServer.getAppuimDeviceList().size();
+                    }
+                } else {
+                    port = 4725;
+                    bootstrapPort = 2251;
+                }
+                if ((oldDevice==false)&&(PLATFORM_NAME.get(i).equals("android"))) {
+                    System.out.println("MobileInformation " + "127.0.0.1 " + port + "" + " UDID= " + UDID.get(i) + " android " + "PLATFORM_VERSION= " + PLATFORM_VERSION.get(i));
+                    AppiumServer.ServerListAdd("127.0.0.1", port, "", UDID.get(i), "android", PLATFORM_VERSION.get(i), bootstrapPort,ishuawei);
+                    ishuawei = false;
+                }
+                input.close();
+                ir.close();
+                process.destroy();
+            }
+            //Kill -9 adbprocess
+            process = Runtime.getRuntime().exec("pgrep adb");
+            ir = new InputStreamReader(process.getInputStream());
+            input = new LineNumberReader(ir);
+
+            while ((line = input.readLine()) != null) {
+                StringBuilder KillAdbString = new StringBuilder();
+                KillAdbString.append("kill -9 ");
+                KillAdbString.append(line.toString());
+                process = Runtime.getRuntime().exec(KillAdbString.toString());
+            }
+            input.close();
+            ir.close();
+            process.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void AddInIosMobile() {
+        Process process = null;
+        InputStreamReader ir = null;
+        LineNumberReader input = null;
+        String line = null;
+        long port = 0;
+        long bootstrapPort = 0;
+
+        try {
+            process = Runtime.getRuntime().exec("instruments -s devices");
+            ir = new InputStreamReader(process.getInputStream());
+            input = new LineNumberReader(ir);
+            while ((line = input.readLine()) != null) {
+                if (line.contains("[")) {
+                    if (!line.substring(line.indexOf("[") + 1, line.indexOf("]")).contains("-") && line.contains("(") && line.contains(")") && line.contains("[") && line.contains("]")) {
+                        PLATFORM_NAME.add("ios");
+                        DEVICE_ID.add(line.substring(0, line.indexOf("(")));
+                        PLATFORM_VERSION.add(line.substring(line.indexOf("(") + 1, line.indexOf(")")));
+                        UDID.add(line.substring(line.indexOf("[") + 1, line.indexOf("]")));
+                        listdevicealiasname.add(line.substring(line.indexOf("[") + 1, line.indexOf("]"))+"("+line.substring(0, line.indexOf(")")+1)+")");
+                        if (PLATFORM_NAME.get(PLATFORM_NAME.size() - 1).equals("ios")) {
+                            if ((appiumServer != null) && (appiumServer.getAppuimDeviceList() != null)) {
+                                port = 4725 + appiumServer.getAppuimDeviceList().size();
+                                bootstrapPort = 2251 + appiumServer.getAppuimDeviceList().size();
+                            } else {
+                                port = 4725;
+                                bootstrapPort = 2251;
+                            }
+                            System.out.println("MobileInformation " + "127.0.0.1 " + port + "" + " DEVICE_ID= " + DEVICE_ID.get(DEVICE_ID.size() - 1) + " UDID= " + UDID.get(UDID.size() - 1) + " ios " + "PLATFORM_VERSION= " + PLATFORM_VERSION.get(PLATFORM_VERSION.size() - 1));
+                            AppiumServer.ServerListAdd("127.0.0.1", port, DEVICE_ID.get(DEVICE_ID.size() - 1), UDID.get(UDID.size() - 1), "ios", PLATFORM_VERSION.get(PLATFORM_VERSION.size() - 1), bootstrapPort,false);
+                        }
+                    }
+                }
+
+            }
+            input.close();
+            ir.close();
+            process.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void DeleteOutMobile() {
+        Boolean NeedDelete = true;
+        if(appiumServer.getAppuimDeviceList() == null || UDID.size() <= 0)
+            return;
+        for (int i = 0; i < appiumServer.getAppuimDeviceList().size(); i++) {
+            for (int j = 0; j < UDID.size(); j++) {
+                if (appiumServer.getAppuimDeviceList().get(i).getDevCapabilities().getCapability(MobileCapabilityType.UDID).equals(UDID.get(j))) {
+                    NeedDelete = false;
+                    break;
+                }
+            }
+            if (NeedDelete == true) {
+                appiumServer.getAppuimDeviceList().remove(i);
+                i = i - 1;
+            } else NeedDelete = true;
+        }
+    }
+}

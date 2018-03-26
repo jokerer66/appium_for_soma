@@ -1,0 +1,227 @@
+package com.instanza.soma.Service.Setting;
+
+import com.instanza.soma.resources.E05_06_Storage;
+import help.AppOperation;
+import help.AppOperationImp;
+import io.appium.java_client.AppiumDriver;
+import org.testng.Assert;
+
+/**
+ * Created by catty on 17/6/13.
+ */
+public class StoragePage {
+    public AppOperation appOperation;
+
+    private static StoragePage storagePage;
+
+    public static StoragePage getInstance() {
+        if (storagePage == null) {
+            synchronized (StoragePage.class) {
+                if (storagePage == null) {
+                    storagePage = new StoragePage();
+                }
+            }
+        }
+        return storagePage;
+    }
+
+    public StoragePage() {
+        appOperation = AppOperationImp.getInstance();
+    }
+
+
+    /**
+     * Storage->Usage页面打开后
+     * 校验Usage页面的左上角返回按钮
+     *
+     * @param driver
+     */
+    public void setUsageBack(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        Boolean isExist = appOperation.waitForEle_Bool(driver, E05_06_Storage.row_messagesent);//message sent
+        Assert.assertTrue(isExist);//message sent 存在
+        appOperation.click(driver, E05_06_Storage.usageback);//返回storage界面
+        Boolean usage = appOperation.waitForEle_Bool(driver, E05_06_Storage.tv_usage);
+        Assert.assertTrue(usage);//确认返回到Storage页了
+    }
+
+    /**
+     * Usage页面打开后
+     * 校验Usage页面手机屏幕第一页的界面文案
+     *
+     * @param driver
+     */
+    public void setUsageDesc1(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        String messageSent = appOperation.getElement(driver, E05_06_Storage.row_messagesent_text1).getText();
+        Assert.assertTrue(messageSent.equals(E05_06_Storage.row_messagesent_desc));
+        Assert.assertEquals(messageSent, E05_06_Storage.row_messagesent_desc);
+        String messageReceived = appOperation.getElement(driver, E05_06_Storage.row_messageRcv_text1).getText();
+        Assert.assertEquals(messageReceived, E05_06_Storage.row_messageRcv_desc);
+        String photoSent = appOperation.getElement(driver, E05_06_Storage.row_picsent_text1).getText();
+        Assert.assertEquals(photoSent, E05_06_Storage.row_picsent_desc);
+        String photoReceived = appOperation.getElement(driver, E05_06_Storage.row_picrcv_text1).getText();
+        Assert.assertEquals(photoReceived, E05_06_Storage.row_picrcv_desc);
+        String voiceSent = appOperation.getElement(driver, E05_06_Storage.row_voicesent_text1).getText();
+        Assert.assertEquals(voiceSent, E05_06_Storage.row_voicesent_desc);
+        String voiceReceived = appOperation.getElement(driver, E05_06_Storage.row_voicercv_text1).getText();
+        Assert.assertEquals(voiceReceived, E05_06_Storage.row_voicercv_desc);
+        String locationSent = appOperation.getElement(driver, E05_06_Storage.row_locsent_text1).getText();
+        Assert.assertEquals(locationSent, E05_06_Storage.row_locsent_desc);
+    }
+
+    /**
+     * Usage页面打开后
+     * 校验Usage页面手机屏幕第二页的界面文案
+     *
+     * @param driver
+     */
+    public void setUsageDesc2(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        appOperation.swipeToUp(driver, 800);//向上滑动屏幕
+        String locationReceived = appOperation.getElement(driver, E05_06_Storage.row_locrcv_text1).getText();
+        Assert.assertEquals(locationReceived, E05_06_Storage.row_locrcv_desc);
+        String videoSent = appOperation.getElement(driver, E05_06_Storage.row_vidsent_text1).getText();
+        Assert.assertEquals(videoSent, E05_06_Storage.row_vidsent_desc);
+        String videoReceived = appOperation.getElement(driver, E05_06_Storage.row_vidrcv_text1).getText();
+        Assert.assertEquals(videoReceived, E05_06_Storage.row_vidrcv_desc);
+        String contactSent = appOperation.getElement(driver, E05_06_Storage.row_cardsent_text1).getText();
+        Assert.assertEquals(contactSent, E05_06_Storage.row_cardsent_desc);
+        String contactReceived = appOperation.getElement(driver, E05_06_Storage.row_cardsrcv_text1).getText();
+        Assert.assertEquals(contactReceived, E05_06_Storage.row_cardsrcv_desc);
+        String outgoingCall = appOperation.getElement(driver, E05_06_Storage.row_outgoingcall_text1).getText();
+        Assert.assertEquals(outgoingCall, E05_06_Storage.row_outgoingcall_desc);
+        String incomingCall = appOperation.getElement(driver, E05_06_Storage.row_incomingcall_text1).getText();
+        Assert.assertEquals(incomingCall, E05_06_Storage.row_incomingcall_desc);
+    }
+
+    /**
+     * Usage页面打开后
+     * 校验Usage页面手机屏幕第三页的界面文案
+     *
+     * @param driver
+     */
+    public void setUsageDesc3(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        appOperation.swipeToUp(driver, 800);//向上滑动屏幕
+        appOperation.swipeToUp(driver, 500);//向上滑动屏幕
+        String outSpeakMode = appOperation.getElement(driver, E05_06_Storage.row_wtsent_text1).getText();
+        Assert.assertEquals(outSpeakMode, E05_06_Storage.row_wtsent_desc);
+        String inSpeakMode = appOperation.getElement(driver, E05_06_Storage.row_wtreceive_text1).getText();
+        Assert.assertEquals(inSpeakMode, E05_06_Storage.row_wtreceive_desc);
+        String resetStatics = appOperation.getElement(driver, E05_06_Storage.row_resetstatistics_text1).getText();
+        Assert.assertEquals(resetStatics, E05_06_Storage.row_resetstatistics_desc);
+//        String resetStaticDate = appOperation.getElement(driver, E05_06_Storage.row_resetstatistics_text2L).getText();
+//        Assert.assertTrue(resetStaticDate.contains(E05_06_Storage.row_resetstatistics_desc));
+    }
+
+    /**
+     * Usage页面打开后
+     * 点击Usage页面Reset按钮，弹出浮层，校验浮层内的文案内容
+     *
+     * @param driver
+     */
+    public void resetUsageCoverDesc(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        resetUsageCover(driver,coverOperation.NoOperation);
+    }
+
+    /**
+     * Usage页面打开后
+     * 点击Usage页面Reset按钮，弹出浮层，点击浮层的Cancel按钮
+     *
+     * @param driver
+     */
+    public void resetUsageCoverCancel(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        resetUsageCover(driver,coverOperation.Cancel);
+    }
+
+    /**
+     * Usage页面打开后
+     * 点击Usage页面Reset按钮，弹出浮层，点击浮层的Reset按钮
+     *
+     * @param driver
+     */
+    public void resetUsageCoverReset(AppiumDriver driver) {
+        appOperation.click(driver, E05_06_Storage.tv_usage);//Storage页点击Usage选项
+        appOperation.sleep(10);
+        resetUsageCover(driver,coverOperation.Reset);
+    }
+
+    /**
+     * Usage页面打开后
+     * 点击Clear Cache清除所有缓存
+     *
+     * @param driver
+     */
+    public void clearCacheStorage(AppiumDriver driver) {
+        String storage = appOperation.getElement(driver, E05_06_Storage.tv_storage_total).getText();//获取缓存数值
+        appOperation.sleep(10);
+        if (storage.equals("Empty")) {
+            Assert.assertTrue(storage.equals("Empty"));
+            System.out.println("已经是空，不需要清除");
+        } else {
+            System.out.println("文件大小总共：" + storage);
+            appOperation.click(driver, E05_06_Storage.ll_clear_cache);
+            String clearCacheText = appOperation.getElement(driver, E05_06_Storage.alertTitleClear).getText();
+            Assert.assertEquals(clearCacheText, E05_06_Storage.clearCache);//点击clear浮层的clear cache
+            appOperation.click(driver, E05_06_Storage.tv_clear_cache);
+            appOperation.sleep(5);
+            String storage2 = appOperation.getElement(driver, E05_06_Storage.tv_storage_total).getText();
+            Assert.assertTrue(storage2.equals("Empty"));
+        }
+    }
+
+
+    /**
+     * Storage页面--clear cache说明内容校验
+     *
+     * @param driver
+     */
+    public void clearCacheDesc(AppiumDriver driver) {
+        String desc = appOperation.getElement(driver, E05_06_Storage.clearCachedesc).getText();
+        System.out.println("desc=" + desc);
+        Assert.assertTrue(desc.contains("Clear Cache will delete photos, videos and other files in chat history"));
+    }
+
+    //点击usage页面的reset选项弹出浮层，NoOperation只校验浮层内容
+    public enum coverOperation{Cancel,Reset,NoOperation}
+
+    public void resetUsageCover(AppiumDriver driver,coverOperation oper) {
+        Boolean isExist = appOperation.waitForEle_Bool(driver, E05_06_Storage.row_resetstatistics);
+        if (isExist == true) {//已经到了底部就直接操作
+            appOperation.click(driver, E05_06_Storage.row_resetstatistics);//点击reset statistics
+        } else if (isExist == false) {//没有到底的时候就滑动到底
+            appOperation.swipeToUp(driver, 1000);//向上滑动屏幕
+            appOperation.swipeToUp(driver, 800);//再次上滑屏幕到底
+            appOperation.click(driver, E05_06_Storage.row_resetstatistics);//点击reset statistics
+        }
+        switch (oper){
+            case NoOperation://就校验下浮层的文案
+                String resetStatistics = appOperation.getElement(driver, E05_06_Storage.alertTitle).getText();
+                Assert.assertEquals(resetStatistics, E05_06_Storage.alertTitleDesc);
+                String resetMessage = appOperation.getElement(driver, E05_06_Storage.alertMessage).getText();
+                Assert.assertEquals(resetMessage, E05_06_Storage.alertMessageDesc);
+                break;
+            case Cancel://点击浮层的cancel按钮
+                appOperation.click(driver, E05_06_Storage.cancel);//点击cancel按钮重置
+                Boolean cancelMessage = appOperation.waitForEle_Bool(driver, E05_06_Storage.alertMessage);
+                Assert.assertFalse(cancelMessage);//浮层消失
+                break;
+            case Reset://点击浮层的reset按钮
+                appOperation.click(driver, E05_06_Storage.reset);//点击reset按钮重置
+                appOperation.sleep(2);
+                String resetToday = appOperation.getElement(driver, E05_06_Storage.row_resetstatistics_text2L).getText();
+                Assert.assertEquals(resetToday, E05_06_Storage.row_resetstatistics_today);
+                break;
+        }
+    }
+
+}

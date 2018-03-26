@@ -1,0 +1,455 @@
+package com.instanza.soma.Service.Login;
+
+
+import com.instanza.soma.debug.AndroidDemoTest;
+import com.instanza.soma.resources.*;
+import help.AppOperation;
+import help.AppOperationImp;
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.TouchAction;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.AndroidKeyCode;
+import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.IOSElement;
+import io.appium.java_client.ios.IOSTouchAction;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.Reporter;
+import utils.MyLogTest;
+import utils.assertT.AssertT;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
+
+/**
+ * Created by sam on 2017/3/1.
+ */
+public class LoginService {
+
+    public AppOperation appOperation;
+    private MyLogTest log;
+    private static LoginService loginService;
+    private AssertT assertT;
+
+    public static LoginService getInstance() {
+        if (loginService == null) {
+            synchronized (LoginService.class) {
+                if (loginService == null) {
+                    loginService = new LoginService();
+                }
+            }
+        }
+        return loginService;
+    }
+
+    public LoginService() {
+        assertT = AssertT.getInstance();
+        appOperation = AppOperationImp.getInstance();
+        log = MyLogTest.getInstance();
+    }
+
+    /*
+    * 测试刚刚启动soma的页面内容*/
+    public void VerifyAgreeAndActivate_android(AppiumDriver driver) {
+        AppOperationImp.getInstance().sleep(5*1000);//2,3Fail, 20,10,5 ok//NeedToDo
+        appOperation.waitForEle(driver, E00_01_AgreeAndActivate.login_welcome_key);
+        assertT.AssertTextInElement(driver,"进入首页检查1",E00_01_AgreeAndActivate.login_welcome_key,E00_01_AgreeAndActivate.login_welcome_Value);
+        assertT.AssertTextInElement(driver,"进入首页检查2",E00_01_AgreeAndActivate.login_description_key,E00_01_AgreeAndActivate.login_description_Value);
+        //中上展示logo, NeedToDo, 图片的验证未实现
+    }
+    public void VerifyAgreeAndActivate_ios(AppiumDriver driver) {
+        appOperation.sleep(5*1000);//2,3Fail, 20,10,5 ok//NeedToDo
+        assertT.AssertElementIsShow(driver,"进入首页检查1",E00_01_AgreeAndActivate.login_welcome_Value_nspredicate);
+        assertT.AssertElementIsShow(driver,"进入首页检查2",E00_01_AgreeAndActivate.login_description_Value_nspredicate);
+        //中上展示logo, NeedToDo, 图片的验证未实现
+    }
+    /*
+    * 测试Terms and Services的页面内容*/
+    public void VerifyTermsAndServices_android(AppiumDriver driver) {
+        appOperation.waitForEle(driver, E00_01_AgreeAndActivate.ACCEPTANCE_ACCID);
+        assertTrue(driver.findElementByAccessibilityId(E00_01_AgreeAndActivate.ACCEPTANCE_CONTENT).getAttribute("name").contains(E00_01_AgreeAndActivate.ACCEPTANCE_CONTENT));
+        ((AndroidDriver) driver).pressKeyCode(AndroidKeyCode.BACK);
+        assertT.AssertTextInElement(driver,"进入TermsAndServices页检查",E00_01_AgreeAndActivate.login_description_key,E00_01_AgreeAndActivate.login_description_Value);
+    }
+    /*
+    * 测试Terms and Services的页面内容*/
+    public void VerifyTermsAndServices_ios(AppiumDriver driver) {
+        assertT.AssertElementIsShow(driver,"进入TermsAndServices页检查",E00_01_AgreeAndActivate.ACCEPTANCE_ACCID2);
+        appOperation.click(driver, E00_Main.ios_back);
+    }
+
+    public void VerifyNextButtonEnable_android(AppiumDriver driver) {
+        Reporter.log("输入框为空时,next按钮不可用");
+        appOperation.getElement(driver, E00_02_ActivatePhoneVerification.edittext_phone).clear();
+        assertTrue(!appOperation.getElement(driver, E00_02_ActivatePhoneVerification.NextButton).isEnabled());
+    }
+    public void VerifyNextButtonEnable_ios(AppiumDriver driver) {
+
+        IOSElement element = (IOSElement)appOperation.getElement(driver,E00_IosClass.TextFieldClass);
+//        IOSTouchAction touchAction = new IOSTouchAction(driver);
+////        ((IOSDriver)driver).hideKeyboard();
+//        touchAction.tap(element.getLocation().getX(),element.getLocation().getY());
+////        ((IOSDriver)driver).hideKeyboard();
+//        appOperation.sleep(1000);
+        element.setValue("2134");
+        element.clear();
+        Reporter.log("输入框为空时,next按钮不可用");
+        assertTrue(appOperation.getElement(driver, E00_02_ActivatePhoneVerification.NextButton_nspredicate).isEnabled());
+    }
+
+
+
+    /**
+     *
+     * @param driver
+     * @param ActivateType
+     * @param PhoneNumber 登陆用手机号码
+     * @param PhoneCountry 登陆用国家名
+     * @param ProfileName 第一次激活时,设置昵称
+     * @param ishuawei 华为手机判断
+     */
+    public void Login_android(AppiumDriver driver, String ActivateType, String PhoneNumber, String PhoneCountry, String ProfileName, Boolean ishuawei) {
+        int flag = 0;//3 新账号需要验证码注册 1 新账号不需要验证码注册 2老账号需要验证码注册 0 老账号不需要验证码登陆
+        VerifyAgreeAndActivate_android(driver);
+//        if (ActivateType.contains("firsttime")) {
+//            //查看条款协议
+//            appOperation.click(driver, E00_01_AgreeAndActivate.login_terms_info);
+//            VerifyTermsAndServices_android(driver);
+//        }
+        //Activate page --> Phone input page
+        appOperation.click(driver, E00_01_AgreeAndActivate.AgreeAndActivate);
+
+        //Phone input page --> Verification Dialog
+        if (ActivateType.contains("firsttime")) {
+            VerifyNextButtonEnable_android(driver);
+            //错误的国家号码
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.RegionSelect);
+            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.search_box, "France");
+            appOperation.click(driver, "xpath///android.widget.TextView[@text='"+"France"+"']/..");
+            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.edittext_phone, PhoneNumber);
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton);
+            assertT.AssertTextInElement(driver,"错误的号码输入 with "+"France"+PhoneNumber,E00_Main.messageview,E00_02_ActivatePhoneVerification.Reenternumber);
+            appOperation.click(driver, E00_03_VerificationCode.ok);
+        }
+        appOperation.click(driver, E00_02_ActivatePhoneVerification.RegionSelect);
+        if(ishuawei && PhoneCountry.equals("United States")){
+            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.search_box, "United");
+        }else{
+            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.search_box, PhoneCountry);
+        }
+        appOperation.click(driver, "xpath///android.widget.TextView[@text='"+PhoneCountry+"']/..");
+        if (ActivateType.contains("firsttime")) {
+            String tempphonenumber = PhoneNumber;
+            //过长的手机号码
+            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.edittext_phone, tempphonenumber+"0576");
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton);
+            assertT.AssertTextInElement(driver,"错误的号码输入 with "+PhoneCountry+tempphonenumber+"0576",E00_Main.messageview,E00_02_ActivatePhoneVerification.Reenternumber);
+            appOperation.click(driver, E00_03_VerificationCode.ok);
+            //过短的手机号码
+            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.edittext_phone, tempphonenumber.substring(0,tempphonenumber.length()-2));
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton);
+            assertT.AssertTextInElement(driver,"错误的号码输入 with "+PhoneCountry+tempphonenumber.substring(0,tempphonenumber.length()-2),E00_Main.messageview,E00_02_ActivatePhoneVerification.Reenternumber);
+            appOperation.click(driver, E00_03_VerificationCode.ok);
+        }
+        appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.edittext_phone, PhoneNumber);
+        appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton);
+
+        if(appOperation.waitForEle_Bool(driver,E00_02_ActivatePhoneVerification.Approve)){
+            flag = flag +2;
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.Approve);
+            if(ActivateType.contains("firsttime")){
+                //切换后台等待超时未输入验证码
+                appOperation.sleep(50*1000);
+                ((AndroidDriver)driver).pressKeyCode(AndroidKeyCode.HOME);
+                assertT.AssertElementIsShow(driver,"等待验证码超时",E00_02_ActivatePhoneVerification.tryverifynumber);
+                appOperation.click(driver, E00_03_VerificationCode.ok);
+                //重发验证码
+                Reporter.log("重发验证码");
+                assertTrue(appOperation.waitForEle_Bool(driver,E00_03_VerificationCode.tryagain));
+                if(appOperation.getElement(driver,E00_03_VerificationCode.tryagain).isEnabled()){
+                    appOperation.click(driver,E00_03_VerificationCode.tryagain);
+                    appOperation.sleep(1000*5);
+                    assertTrue(!appOperation.getElement(driver,E00_03_VerificationCode.tryagain).isEnabled());
+                }
+                //错误的验证码
+                appOperation.sendkey(driver, E00_03_VerificationCode.dashline_edittext, "2525");
+                assertT.AssertElementIsShow(driver,"验证码错误",E00_03_VerificationCode.WrongVerifyCode);
+                appOperation.click(driver, E00_03_VerificationCode.ok);
+            }
+            appOperation.sendkey(driver, E00_03_VerificationCode.dashline_edittext, "1616");
+        }
+        appOperation.click(driver, E00_03_VerificationCode.ok);
+        if(appOperation.waitForEle_Bool(driver, E00_04_ActivateProfileName.status_editText)){
+            flag = flag +1;
+            appOperation.sendkey(driver, E00_04_ActivateProfileName.status_editText, ProfileName);
+            appOperation.click(driver, E00_04_ActivateProfileName.action_bar_right_function_button);
+        }
+
+        //点击E00_05_Welcome.terms后,无法再找到E00_05_Welcome.welcome_continue 控件,?????
+//        if(ActivateType.contains("firsttime")) {
+//            appOperation.click(driver, E00_05_Welcome.terms);
+//            assertT.AssertElementIsShow(driver,"donot charge anything conext",E00_05_Welcome.termsContext);
+//            appOperation.click(driver, E00_03_VerificationCode.ok);
+//        }
+        //Welcome page --> ContactsOK dialog box
+        appOperation.click(driver, E00_05_Welcome.welcome_continue);
+        assertT.AssertElementIsShow(driver,"注册登陆,上传通讯录成功",E00_05_Welcome.uploadcontacts);
+        appOperation.click(driver, E00_Main.ok);
+        //NeedToDo为什么有时候出现通讯录上传对话框，有时候没有出现上传对话框?
+        if (ishuawei == true) {
+            if(ActivateType.contains("firsttime")){
+                appOperation.click(driver, E00_Main.ViewDetails);
+                appOperation.waitForEle(driver, E00_Main.Huaweititle);
+                assertEquals(driver.findElement(By.id(E00_Main.Huaweititle)).getText(), E00_Main.Huaweititle_text);
+            }else{
+                appOperation.click(driver, E00_Main.GotIt);
+            }
+
+            Reporter.log("huawei 手机登陆");
+        }
+        getreport(PhoneCountry,flag);
+    }
+
+    /**
+     *
+     * @param driver
+     * @param ActivateType
+     * @param PhoneNumber 登陆用手机号码
+     * @param PhoneCountry 登陆用国家名
+     * @param ProfileName 第一次激活时,设置昵称
+     * @param ishuawei 华为手机判断
+     */
+    public void Login_ios(AppiumDriver driver, String ActivateType, String PhoneNumber, String PhoneCountry, String ProfileName, Boolean ishuawei) {
+        int flag = 0;//3 新账号需要验证码注册 1 新账号不需要验证码注册 2老账号需要验证码注册 0 老账号不需要验证码登陆
+        //notification 权限是否同意
+        if(appOperation.waitForEle_Bool(driver,E00_Main.ios_Allow)){
+            appOperation.click(driver,E00_Main.ios_Allow);
+        }
+        VerifyAgreeAndActivate_ios(driver);
+        if (ActivateType.contains("firsttime")) {
+            //查看条款协议
+            appOperation.click(driver, E00_01_AgreeAndActivate.login_terms_nspredicate);
+            VerifyTermsAndServices_ios(driver);
+        }
+        //Activate page --> Phone input page
+        appOperation.click(driver, E00_01_AgreeAndActivate.AgreeAndActivate_nspredicate);
+        //Phone input page --> Verification Dialog
+        if (ActivateType.contains("firsttime")) {
+            VerifyNextButtonEnable_ios(driver);
+            //错误的国家号码
+//            click_countrySelect(driver).click();
+            appOperation.click(driver,E00_02_ActivatePhoneVerification.RegionSelect_xpath);
+            appOperation.sendkey(driver, E00_IosClass.SearchFieldClass, "France");
+            appOperation.click(driver, "name = 'France'");
+            appOperation.sendkey(driver, E00_IosClass.TextFieldClass, PhoneNumber);
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton_nspredicate);
+            assertT.AssertTextInElement(driver,"错误的号码输入 with "+"France"+PhoneNumber,E00_02_ActivatePhoneVerification.ReEnterNumber_nspredicate,E00_02_ActivatePhoneVerification.Reenternumber);
+            appOperation.click(driver, E00_Main.ios_OK);
+        }
+        appOperation.click(driver,E00_02_ActivatePhoneVerification.RegionSelect_xpath);
+        appOperation.sendkey(driver, E00_IosClass.SearchFieldClass, PhoneCountry);
+        appOperation.click(driver, "name = '"+PhoneCountry+"'");
+        if (ActivateType.contains("firsttime")) {
+            String tempphonenumber = PhoneNumber;
+            //过长的手机号码
+            appOperation.sendkey(driver,E00_IosClass.TextFieldClass, tempphonenumber+"0576");
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton_nspredicate);
+            assertT.AssertTextInElement(driver, "错误的号码输入 with " + PhoneCountry + tempphonenumber + "0576", E00_02_ActivatePhoneVerification.ReEnterNumber_nspredicate, E00_02_ActivatePhoneVerification.Reenternumber);
+            appOperation.click(driver, E00_Main.ios_OK);
+            //过短的手机号码
+            appOperation.sendkey(driver,E00_IosClass.TextFieldClass, tempphonenumber.substring(0,tempphonenumber.length()-2));
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton_nspredicate);
+            assertT.AssertTextInElement(driver,"错误的号码输入 with "+PhoneCountry+tempphonenumber.substring(0,tempphonenumber.length()-2), E00_02_ActivatePhoneVerification.ReEnterNumber_nspredicate, E00_02_ActivatePhoneVerification.Reenternumber);
+            appOperation.click(driver, E00_Main.ios_OK);
+        }
+        appOperation.sendkey(driver,E00_IosClass.TextFieldClass, PhoneNumber);
+        appOperation.click(driver, E00_02_ActivatePhoneVerification.NextButton_nspredicate);
+        //若出现approve,表示需要填写验证码
+        if(appOperation.waitForEle_Bool(driver,E00_02_ActivatePhoneVerification.Approve_nspredicate)){
+            flag = flag +2;
+            appOperation.click(driver, E00_02_ActivatePhoneVerification.Approve_nspredicate);
+            if(ActivateType.contains("firsttime")){
+                //切换后台等待超时未输入验证码
+                appOperation.sleep(50*1000);
+                appOperation.toIosBackGround(driver,15);
+                //重发验证码
+                appOperation.click(driver,E00_IosClass.ButtonClass,2);
+                appOperation.sleep(2000);
+                Reporter.log("重发验证码");
+                //错误的验证码
+                appOperation.click(driver, E00_IosElement.keyboard_text1);
+                appOperation.click(driver, E00_IosElement.keyboard_text2);
+                appOperation.click(driver, E00_IosElement.keyboard_text3);
+                appOperation.click(driver, E00_IosElement.keyboard_text4);
+                assertT.AssertElementIsShow(driver,"验证码错误",E00_03_VerificationCode.WrongVerifyCode_nspredicate);
+                appOperation.click(driver, E00_Main.ios_OK);
+            }
+            //正确的验证码
+            appOperation.click(driver, E00_IosElement.keyboard_text1);
+            appOperation.click(driver, E00_IosElement.keyboard_text6);
+            appOperation.click(driver, E00_03_VerificationCode.text_1);
+            appOperation.click(driver, E00_03_VerificationCode.text_6);
+        }
+        //若出现profile name填写页面
+        if(appOperation.waitForEle_Bool(driver, E00_IosClass.TextFieldClass)){
+            flag = flag +1;
+            appOperation.sendkey(driver, E00_IosClass.TextFieldClass, ProfileName);
+            appOperation.click(driver, E00_04_ActivateProfileName.DoneButton_nspredicate);
+        }
+        //若出现contacts权限同意页面
+        if(appOperation.waitForEle_Bool(driver,E00_04_ActivateProfileName.ContactsAccess_nspredicate)){
+            appOperation.click(driver,E00_04_ActivateProfileName.ContactsAccessContinue_xpath);
+            if(appOperation.waitForEle_Bool(driver,E00_04_ActivateProfileName.ContactsAccessText_nspredicate)){
+                appOperation.click(driver,E00_Main.ios_OK);
+            }
+        }
+
+
+        if(ActivateType.contains("firsttime")) {
+            appOperation.click(driver, E00_05_Welcome.terms_nspredicate);
+            assertT.AssertElementIsShow(driver,"donot charge anything conext",E00_05_Welcome.termsContext_nspredicate);
+            appOperation.click(driver, E00_Main.ios_OK);
+        }
+        //Welcome page --> ContactsOK dialog box
+        appOperation.click(driver, E00_05_Welcome.welcome_continue_nspredicate);
+        assertT.AssertElementIsShow(driver,"注册登陆,上传通讯录成功",E00_05_Welcome.uploadcontacts_nspredicate);
+        appOperation.click(driver, E00_Main.ios_OK);
+        getreport(PhoneCountry,flag);
+    }
+
+    public void getreport(String PhoneCountry,int flag){
+        if(PhoneCountry.equals("China")){
+            Reporter.log("中国账号登陆");
+        }else{
+            if(PhoneCountry.equals("United States")){
+                Reporter.log("美国账号登陆");
+            }else{
+                Reporter.log("中美以外国家账号登陆");
+            }
+        }
+        switch (flag){//3 新账号需要验证码注册 1 新账号不需要验证码注册 2老账号需要验证码注册 0 老账号不需要验证码登陆
+            case 0:
+                Reporter.log("老账号不需要验证码登陆");
+                break;
+            case 1:
+                Reporter.log("新账号不需要验证码注册");
+                break;
+            case 2:
+                Reporter.log("老账号需要验证码注册");
+                break;
+            case 3:
+                Reporter.log("新账号需要验证码注册");
+                break;
+            default:
+                Reporter.log("login 执行失败");
+                break;
+        }
+        appOperation.sleep(5000);
+    }
+
+    public WebElement click_countrySelect(AppiumDriver driver){
+//        appOperation.sleep(1000);
+//        WebElement element = appOperation.getElement(driver,E00_IosClass.ButtonClass,2);//未知为何只有4个button元素,有时会是6个元素
+//        //坐标在顶部,代表是back按钮
+//        if(element.getLocation().getY()<70){
+//            element = appOperation.getElement(driver,E00_IosClass.ButtonClass,4);
+//        }
+        WebElement element =appOperation.getElement(driver,E00_IosClass.ButtonClass,2);
+        return element;
+    }
+
+    public void DeleteAccount_android(AppiumDriver driver,String ActivateType){
+        appOperation.click(driver,E00_Main.Settings_xpath);
+        appOperation.click(driver,"text(\"Settings\")");
+        appOperation.click(driver,E00_Main.Account);
+        String phonenumber = appOperation.getElement(driver,E05_03_Account.row_MyNumber_text2).getText().toString();
+        appOperation.click(driver,E05_03_Account.row_deleteaccount);
+        if(ActivateType.contains("firsttime")){
+            appOperation.click(driver,E05_03_03_DeleteAccount.delete_account_select_country);
+//            appOperation.sendkey(driver, E00_02_ActivatePhoneVerification.search_box, "France");
+//            appOperation.getElement(driver,E00_02_ActivatePhoneVerification.search_box).clear();
+            appOperation.getElement(driver,E00_02_ActivatePhoneVerification.search_box).sendKeys("France");
+            appOperation.click(driver, "xpath///android.widget.TextView[@text='"+"France"+"']/..");
+            appOperation.click(driver,E05_03_Account.delete_account_button);
+//            assertT.AssertElementIsShow(driver,"删除账号时,国家码选择错误",E05_03_03_DeleteAccount.selectCountryCode);
+
+
+//            String toast="Please select a valid country code.";
+//            final WebDriverWait wait = new WebDriverWait(driver,2);
+//            try {
+//
+//                Assert.assertNotNull(wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[contains(@text,'"+ toast + "')]"))));
+//                System.out.println("找到了toast");
+//            } catch (Exception e) {
+//                throw new AssertionError("找不到"+toast);
+//            }
+
+            //返回后在重新进入重置国家码
+            ((AndroidDriver)driver).pressKeyCode(AndroidKeyCode.BACK);
+            appOperation.click(driver,E05_03_Account.row_deleteaccount);
+            appOperation.sendkey(driver,E05_03_Account.edittext_phone,phonenumber+"0576");
+            appOperation.click(driver,E05_03_Account.delete_account_button);
+            appOperation.click(driver,E05_03_Account.Cancel);
+            appOperation.click(driver,E05_03_Account.delete_account_button);
+            appOperation.click(driver,E05_03_Account.Delete);
+//            assertT.AssertElementIsShow(driver,"删除账号时,输入的号码不正确",E05_03_03_DeleteAccount.numberNotMatch);
+//            toast = "The phone number you entered doesn’t match your account’s.";
+//            try {
+//                Assert.assertNotNull(wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[contains(@text,'"+ toast + "')]"))));
+//                System.out.println("找到了toast");
+//            } catch (Exception e) {
+//                throw new AssertionError("找不到"+toast);
+//            }
+
+        }
+        appOperation.sendkey(driver,E05_03_Account.edittext_phone,phonenumber);
+        appOperation.click(driver,E05_03_Account.delete_account_button);
+        appOperation.click(driver,E05_03_Account.Delete);
+        appOperation.sleep(3000);
+        Reporter.log("删除账号");
+        Assert.assertTrue(appOperation.waitForEle_Bool(driver,E00_01_AgreeAndActivate.AgreeAndActivate),"back to first login page");
+    }
+
+    public void DeleteAccount_ios(AppiumDriver driver,String ActivateType){
+        String phonenumber = "11111111";
+        appOperation.click(driver,E00_Main.Settings_nspredicate);
+        appOperation.click(driver,E05_Setting.Account_nspredicate);
+        appOperation.sleep(2000);
+        phonenumber = appOperation.getElement(driver,E05_03_Account.row_MyNumber_xpath).getText().toString();System.out.println("text = " + phonenumber);
+        appOperation.click(driver,E05_03_Account.row_deleteaccount_nspredicate);
+        if(ActivateType.contains("firsttime")){
+            appOperation.sleep(1000);
+            appOperation.click(driver,E05_03_03_DeleteAccount.delete_account_select_country_xpath);
+            appOperation.sendkey(driver, E00_IosClass.SearchFieldClass, "France");
+            appOperation.click(driver, "name = 'France'");
+
+            appOperation.click(driver,E05_03_03_DeleteAccount.delete_account_button_nspredicate,1);
+            assertT.AssertElementIsShow(driver,"删除账号时,国家码选择错误",E05_03_03_DeleteAccount.selectCountryCode_nspredicate);
+            appOperation.click(driver,E00_Main.ios_OK);
+            //返回后在重新进入重置国家码
+            appOperation.click(driver,E00_Main.ios_Cancel);
+            appOperation.click(driver,E05_03_Account.row_deleteaccount_nspredicate);
+            appOperation.sendkey(driver,E00_IosClass.TextFieldClass,phonenumber+"0576");
+            appOperation.click(driver,E05_03_03_DeleteAccount.delete_account_button_nspredicate,1);
+            if(appOperation.waitForEle_Bool(driver,E05_03_03_DeleteAccount.delete_confireText_nspredicate)){
+                appOperation.click(driver,E00_Main.ios_OK);
+            }
+            assertT.AssertElementIsShow(driver,"删除账号时,输入的号码不正确",E05_03_03_DeleteAccount.numberNotMatch_nspredicate);
+            appOperation.sleep(3000);
+        }
+        appOperation.sleep(1500);
+        appOperation.sendkey(driver,E00_IosClass.TextFieldClass,phonenumber);
+        appOperation.click(driver,E05_03_03_DeleteAccount.delete_account_button_nspredicate,1);
+        appOperation.click(driver,E00_Main.ios_OK);
+        appOperation.sleep(3000);
+        Reporter.log("删除账号");
+        VerifyAgreeAndActivate_ios(driver);
+    }
+}

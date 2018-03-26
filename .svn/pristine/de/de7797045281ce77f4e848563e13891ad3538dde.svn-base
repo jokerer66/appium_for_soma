@@ -1,0 +1,79 @@
+package utils;
+
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+
+/**
+ * Created by sam on 2017/3/10.
+ */
+public class MyProcess {
+    /*
+    private static MyProcess ProcessObj;
+    public static MyProcess getInstance() {
+        if (ProcessObj == null) {
+            synchronized (MyProcess.class) {
+                if (ProcessObj == null) {
+                    ProcessObj = new MyProcess();
+                }
+            }
+        }
+        return ProcessObj;
+    }
+    public MyProcess(){}
+*/
+    public static Boolean IsProcessActive(String command) {
+        try {
+
+            java.lang.Process process;
+            InputStreamReader ir;
+            LineNumberReader input;
+            String line = null;
+
+            //ps -ef | grep "f4d19644"
+//            command = "ps -ef | grep \"appium -p 4725 -bp 2251\"";
+            String psCommand = "ps -ef ";
+            process = Runtime.getRuntime().exec(psCommand);
+            ir = new InputStreamReader(process.getInputStream());
+            input = new LineNumberReader(ir);
+
+
+            while ((line = input.readLine()) != null) {
+                if (line.contains(command)) {
+                    return true;
+                }
+            }
+            input.close();
+            ir.close();
+//            process.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+/*
+    public static void kill(String command) {
+
+        try {
+            java.lang.Process process;
+            InputStreamReader ir;
+            LineNumberReader input;
+            String line = null;
+            process = Runtime.getRuntime().exec(command);
+            ir = new InputStreamReader(process.getInputStream());
+            input = new LineNumberReader(ir);
+
+            while ((line = input.readLine()) != null) {
+                StringBuilder KillAdbString = new StringBuilder();
+                KillAdbString.append("kill -9 ");
+                KillAdbString.append(line.toString());
+                process = Runtime.getRuntime().exec(KillAdbString.toString());
+            }
+            input.close();
+            ir.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    */
+}

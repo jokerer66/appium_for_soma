@@ -1,0 +1,29 @@
+package com.instanza.soma.Service.Setting;
+
+import help.AppOperation;
+import help.AppOperationImp;
+
+/**
+ * Created by catty on 2017/7/26.
+ */
+public class MyCoinsPage {
+    private static MyCoinsPage myCoinsPage;
+    public AppOperation appOperation;
+
+    public MyCoinsPage() {
+        appOperation = AppOperationImp.getInstance();
+    }
+
+    public static MyCoinsPage getInstance() {
+        if (myCoinsPage == null) {
+            synchronized (MyCoinsPage.class) {
+                if (myCoinsPage == null) {
+                    myCoinsPage = new MyCoinsPage();
+                }
+            }
+        }
+        return myCoinsPage;
+    }
+
+
+}

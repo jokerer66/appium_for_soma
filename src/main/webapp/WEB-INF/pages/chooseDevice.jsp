@@ -1,0 +1,91 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: apple
+  Date: 2017/3/30
+  Time: 14:05
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}"/>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<script src="${ctx}/static/plugins/js/plugins/jquery/jquery-2.1.0.min.js"></script>
+<script src="${ctx}/static/plugins/js/plugins/jquery/jquery-ui.min.js"></script>
+<script src="${ctx}/static/plugins/js/jquery-1.11.1.min.js"></script>
+<html>
+<head>
+    <title>devicelist</title>
+    
+    
+    <script language="JavaScript">
+        function starttest1() {
+            if(document.getElementById("startbutton").value == "执行测试用例中..."){
+                alert("执行测试用例中...");
+                return;
+            }
+            document.getElementById("startbutton").value = "执行测试用例中...";
+            var names = document.getElementsByName("devicename");
+            var namescount = names.length;
+            var strdevicename="";
+
+            for(var i=0;i<namescount;i++){
+                if(names[i].checked == true){
+                    if(i==namescount-1){
+                        strdevicename+=names[i].value;
+                    }else{
+                        strdevicename+=names[i].value+",";
+                    }
+
+                }
+            }
+
+            var classname = document.getElementsByName("classname");
+            var classnamescount = classname.length;
+            var strclassname="";
+
+            for(var i=0;i<classnamescount;i++){
+                if(classname[i].checked == true){
+                    if(i==classnamescount-1){
+                        strclassname+=classname[i].value;
+                    }else{
+                        strclassname+=classname[i].value+",";
+                    }
+
+                }
+            }
+            alert("device = "+strdevicename+"  classname = "+strclassname);
+            $.post("${ctx}/starttest/starttest1?devicename=" + strdevicename +"&classname="+strclassname, function (data) {
+                if(data == "noclass"){
+                    alert("no test class chosed");
+                }
+                if(data == "nodevice"){
+                    alert("no test devices chosed");
+                }
+                if(data == "finishtest"){
+                    alert("测试用例执行完成");
+                    window.open("getReport","_self");
+                }
+                if(data == "error"){
+                    alert("test error");
+                }
+                document.getElementById("startbutton").value = "start test mission";
+            })
+        }
+    </script>
+</head>
+<body>
+<tr>
+
+    <c:forEach var="v" items="${listdevicealiasname}">
+        <c:if test="${v=='no devices' }">no devices to use</c:if>
+        <c:if test="${v!='no devices' }"><input type="checkbox" name="devicename" value="${v}"/>${v}<br></c:if>
+    </c:forEach><br>
+    <c:forEach var="classname" items="${listclassname}">
+        <input type="checkbox" name="classname" value="${classname}"/>${classname}<br>
+    </c:forEach>
+    <td><a href="choosedevice" >refresh</a></td><br>
+    <td><input type="button" onclick="starttest1()" id="startbutton" value="start test mission"></td>
+    <%--<td><a href="http://localhost:8080/downreport/html/index.html" >view report[driver${drivercount}]</a> </td>--%>
+</tr>
+</body>
+</html>

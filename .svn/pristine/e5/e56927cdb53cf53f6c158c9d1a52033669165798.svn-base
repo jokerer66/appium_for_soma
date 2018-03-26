@@ -1,0 +1,114 @@
+package help.driver;
+
+//import io.appium.java_client.AppiumDriver;
+import help.AppOperationImp;
+import help.bean.AppiumDevice;
+import help.startup.SuiteTestThread;
+import io.appium.java_client.remote.MobileCapabilityType;
+import utils.MyLogTest;
+import utils.MyProcess;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
+
+/**
+ * Created by sam on 2017/3/5.
+ */
+public class DriverInit {
+    private static DriverInit initdriverobj;
+//    public static List<AppiumDriver> driverlist_All = new ArrayList<>();
+
+    public static DriverInit getInstance() {
+        if (initdriverobj == null) {
+            synchronized (DriverInit.class) {
+                if (initdriverobj == null) {
+                    initdriverobj = new DriverInit();
+                }
+            }
+        }
+        return initdriverobj;
+    }
+    //一旦启动就持续的检测是否有可用的设备，是否有可用的端口，是否有废弃的设备，是否有废弃的端口进行处理
+    //NeedToDo 无线连接被测手机的App
+    //NeedToDo 两个手机之间通过监控的方式来感知接收消息和接听电话
+    //NeedToDo 通过Web的方式，在手机端触发进行自动化回归测试
+    public void setUp() throws Exception {
+        MobileInformation.GetMObileInformation();
+        StartAppiumServer();
+        StartDriverThreadNew();
+    }
+    public void StartAppiumServer(){
+
+        StartAppiumServer(SuiteTestThread.appiumServer.getAppuimDeviceList());
+    }
+
+    public void StartAppiumServer(List<AppiumDevice> listdevices){
+        if(listdevices == null || listdevices.size() <=0){
+            return;
+        }
+        String AppiumServerCommand = "";
+        Boolean newAppiumServerconnect = false;
+        System.out.println("AppiumServerCommand begin====================================================================");
+        for (int j = 0; j < listdevices.size(); j++) {
+            AppiumServerCommand = "appium -p " + listdevices.get(j).getAppiumPort() + " -bp " + listdevices.get(j).getBootstrapPort();
+            if (!MyProcess.IsProcessActive(AppiumServerCommand)) {
+                System.out.println("Appium server start " + AppiumServerCommand);
+                try {
+                    Runtime.getRuntime().exec(AppiumServerCommand);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                newAppiumServerconnect = true;
+                AppOperationImp.getInstance().sleep(1000);
+            } else {
+                System.out.println("Appium server already exist " + AppiumServerCommand);
+            }
+        }
+        if (newAppiumServerconnect) {
+            System.out.println("New Appium server start, wait 15s begin");
+            AppOperationImp.getInstance().sleep(16 * 1000);
+        }
+    }
+    public void StartDriverThreadNew(){
+        StartDriverThreadNew(SuiteTestThread.appiumServer.getAppuimDeviceList());
+    }
+
+    public void StartDriverThreadNew(List<AppiumDevice> listdevices){//getDevCapabilities().getCapability(MobileCapabilityType.UDID)
+        List<Future> futureList = new ArrayList();
+        for(int i=0;i<listdevices.size();i++){
+            if(listdevices.get(i).getDriver()== null){
+                futureList.add(startDriver(i));
+                MyLogTest.getInstance().log("build driver with "+listdevices.get(i).getDevCapabilities().getCapability(MobileCapabilityType.UDID));
+            }else {
+                MyLogTest.getInstance().log("driver is exist with "+listdevices.get(i).getDevCapabilities().getCapability(MobileCapabilityType.UDID));
+            }
+        }
+
+        for(int i=0;i<listdevices.size();i++){
+            if(listdevices.get(i).getDriver()== null){
+                new DriverThread().getback(futureList.get(i));
+            }
+        }
+//        for (int j = 0; j < listdevices.size(); j++) {
+//            //因为回归测试，所以每次最好是新安装apk开始进行测试，这样反正每次就重新new 一个driver
+//            if(listdevices.get(j).getDriver() !=null)
+//                listdevices.get(j).setDriver(null);
+////            else System.out.println("Driver already exist with index= "+j+" "+appiumServer.getAppuimDeviceList().get(j).getDriver().toString());
+//            futureList.add(startDriver(j));
+//        }
+
+    }
+    public Future startDriver(int j) {
+        Future future = null;
+        try {
+            future = new DriverThread().submit(j);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return future;
+    }
+
+}

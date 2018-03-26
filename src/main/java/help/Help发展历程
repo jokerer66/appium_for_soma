@@ -1,0 +1,110 @@
+2017/3/22
+团队要有业务手工测试负责人角色，业务页面自动化测试负责人角色，页面自动化框架负责人角色
+业务手工测试负责人-负责业务的质量提升
+业务页面自动化测试负责人-负责把手工测试发现的bug录入到自动化测试中，提升被测代码覆盖率，降低手工测试时的重复工作
+页面自动化框架负责人-负责把业务页面自动化测试中遇到的共性问题实现到框架中，提升测试代码稳定性，提升测试代码执行速度，提升持续构建能力，降低自动化实施时的重复工作
+==================================================================================
+Project compiler output 设置为/Library/apache-tomcat-7.0.69/webapps
+Artifacts output 设置为/Library/apache-tomcat-7.0.69/webapps/soma-test
+==================================================================================
+http://www.cnblogs.com/TankXiao/p/3888070.html#introduce testNG参考
+==================================================================================
+Junit suite的写法
+public class MiniRegressionSuite extends TestSuite {
+
+    public static Test suite()
+    {
+        TestSuite testsuite1 = new TestSuite("Mini regression test suite");
+        testsuite1.addTestSuite(BeginTestClass.class);
+        testsuite1.addTestSuite(CleanTestClass.class);
+        return testsuite1;
+    }
+}
+==================================================================================
+2017/3/20
+测试报告调研：
+1.HTMLTestRunner
+2.TestNG + ReportNG
+用SVN管理管理代码,Jenkins做持续集成
+Spoon同时在多个设备上运行
+网易2014年出了一个TestNG的小插件,实现了失败用例重跑,失败自动截图,展示用例运行次数等等功能,很好很实用,就只有一个缺点,生成的报告是改造了TestNG自带的emailable-report.html
+项目地址:https://github.com/NetEase/arrow
+==================================================================================
+2017/3/11 使用如下模型来设计被动接收消息的自动化验证
+Synchronized 线程阻塞?
+syncObj.wait(1000*60*10); 代表run()这个函数要不断的重复执行，直到10分钟后结束
+timer.schedule(new TimerTask() {}, 1000 * 3, 1000 * 50);
+1000 * 3代表第一次执行run()，要延迟3秒才开始执行;第2次及以后run()执行间隔时间为50秒;
+如果run()执行时间不到50秒，那么两次Run开始执行的间隔时间为1000 * 50
+如果run()执行时间超过50秒，那么run一结束，新的run就立即开始执行
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    receiveAndSendMsg(driverList.get(driverNumber));
+                }
+            }, 1000 * 3, 1000 * 50);
+            synchronized (syncObj) {
+                syncObj.wait(1000*60*10);
+            }
+
+==================================================================================
+2017/3/10
+Bootstrap监听4724端口，appiumserver默认使用4723端口。
+考虑到自动增长因此appiumserver使用4725开始的端口。
+IOS不能进行本地并发测试，在同一时间只能启动一个手机测试。
+单机并发目前只能在android实现，且必须启动n个appium server 对应不同devices，必须保证端口后没有重复使用
+==================================================================================
+2017/3/8
+可以用如下两行获得被测App
+        File app = new File("/users/sam/Desktop", "soma.apk");
+        capabilities.setCapability("app", app.getAbsolutePath());
+        capabilities.setCapability("appActivity", ".activity.CocoVoice");
+或者如下一行
+        capabilities2.setCapability(MobileCapabilityType.APP, "/Users/sam/Desktop/soma.apk");
+==================================================================================
+2017/3/6:
+=====封装classname方式的xpath到Appoperation
+1.有Appoertation的wait功能，
+2.可以降低写作者的难度，提升写作效率
+从
+List<AndroidElement> FieldsList = driver.findElementsByClassName("className");
+FieldsList.get(1).click();
+修改为
+appOperation.click(driver, "classname/xxxx");
+3.代码只有一行，简洁，清晰，易懂，易维护，不容易出错
+4.后续执行哪一个按钮会变化不能明确，所以只能等待当前元素，不能等待下一个元素
+=====wait下一个元素的出现，修改为wait当前元素的出现
+1.修改点
+从
+    void click(AndroidDriver driver,String click_on_ele);
+修改为
+    void click(AndroidDriver driver,String click_on_ele,String click_after_ele);
+2.代码减少了参数, 可以降低写作者的难度，提升写作效率, 不容易出错
+==================================================================================
+2017/3/6以前:
+=====封装sendkey, 增加wait机制
+1.修改点
+从
+        WebElement DeletePhone = driver.findElement(By.mobileID(E05_03_03_DeleteAccount.edittext_phone));
+        DeletePhone.clear();
+        DeletePhone.sendKeys(DeletePhonenumber);
+修改为
+    void sendkey(AndroidDriver driver,String ele,String context);
+
+=====把click_id2id，和click_id2text等的wait，封装为click
+1.修改点
+从
+    void click_id2id(AppiumDriver driver,String click_on_ele_id,String click_after_ele_id);
+    void click_text2id(AppiumDriver driver,String click_on_ele_text,String click_after_ele_id);
+修改为
+    void click(AndroidDriver driver,String click_on_ele,String click_after_ele);
+=====把wait和点击一起封装成一条语句
+1.修改点
+从
+    driver.findElement(By.mobileID("com.instanza.baba:mobileID/select_country_text")).click();
+    driver.manage().timeouts().implicitlyWait(10,TimeUnit.SECONDS);
+修改为
+    click_id2id(AppiumDriver driver,String click_on_ele_id,String click_after_ele_id);
+2. 不需要调试哪些步骤需要wait, 减少了调试时间
+3. 不需要调试这些步骤需要wait多少时间，, 减少了调试时间
+4. 减少了代码行数
